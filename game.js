@@ -60,12 +60,22 @@ class Game {
         const dx = this.playerPos.x - this.teacherPos.x;
         const dy = this.playerPos.y - this.teacherPos.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
+        const viewRange = 200; // 視線範圍
 
-        if (distance < 200) {
+        // 檢查玩家是否在視線範圍內
+        if (distance < viewRange) {
+            // 加入警告效果
+            this.teacher.classList.add('alert');
+            
+            // 計算追趕方向
             this.teacherPos.x += (dx / distance) * speed;
             this.teacherPos.y += (dy / distance) * speed;
+            
+            // 增加警戒值
             this.increaseCaughtMeter();
         } else {
+            // 移除警告效果
+            this.teacher.classList.remove('alert');
             // 老師巡邏
             this.teacherPatrol();
         }
@@ -99,51 +109,66 @@ class Game {
         const dy = this.playerPos.y - 300;
         const distanceToDoor = Math.sqrt(dx * dx + dy * dy);
 
+        // 當玩家靠近門時添加發光效果
+        if (distanceToDoor < 100) {
+            this.door.classList.add('nearby');
+        } else {
+            this.door.classList.remove('nearby');
+        }
+
+        // 當玩家觸碰到門時獲勝
         if (distanceToDoor < 30) {
-            this.gameOver('成功逃出！');
+            clearInterval(this.gameLoop);
+            this.gameOver('成功逃出！', true);
         }
     }
 
     increaseCaughtMeter() {
+        // 當玩家在老師視線範圍內時，警戒值上升
         this.caughtValue = Math.min(100, this.caughtValue + 0.1);
-        if (this.caughtValue >= 100) {
-            this.gameOver('警戒值太高，被發現了！');
-        }
         this.updateUI();
+        
+        // 當警戒值達到 100% 時，遊戲結束
+        if (this.caughtValue >= 100) {
+            this.gameOver('警戒值達到100%！');
+        }
     }
 
     startTimer() {
         const timer = setInterval(() => {
             this.timeLeft--;
+            this.updateUI();
+            
             if (this.timeLeft <= 0) {
                 clearInterval(timer);
                 this.gameOver('時間到！');
             }
-            this.updateUI();
         }, 1000);
     }
 
     updateUI() {
-        this.timerDisplay.textContent = `時間: ${this.timeLeft}秒`;
+        // 更新計時器和警戒值顯示
+        this.timerDisplay.textContent = `時間: ${Math.ceil(this.timeLeft)}秒`;
         this.caughtMeter.textContent = `警戒值: ${Math.floor(this.caughtValue)}%`;
+        
+        // 根據警戒值改變顏色
+        const red = Math.floor((this.caughtValue / 100) * 255);
+        const green = Math.floor(((100 - this.caughtValue) / 100) * 255);
+        this.caughtMeter.style.color = `rgb(${red}, ${green}, 0)`;
     }
 
-    async gameOver(message) {
+    gameOver(message, isWin = false) {
         clearInterval(this.gameLoop);
-        const result = await Swal.fire({
-            title: message,
-            text: '要再玩一次嗎？',
-            icon: message.includes('成功') ? 'success' : 'error',
-            confirmButtonText: '重新開始',
-            showCancelButton: true,
-            cancelButtonText: '結束遊戲'
+        Swal.fire({
+            title: isWin ? '遊戲勝利！' : '遊戲結束',
+            text: message,
+            icon: isWin ? 'success' : 'error',
+            confirmButtonText: '重新開始'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.startGame();
+            }
         });
-
-        if (result.isConfirmed) {
-            this.startGame();
-        } else {
-            this.startScreen.style.display = 'flex';
-        }
     }
 }
 
