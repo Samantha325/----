@@ -43,16 +43,103 @@ body {
     background-color: #f44336;
     position: absolute;
     border-radius: 50%;
+    z-index: 2;
+}
+
+.teacher::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    /* 改變基礎視線範圍的顏色和透明度 */
+    background: radial-gradient(circle, 
+        rgba(255, 165, 0, 0.15) 0%, 
+        rgba(255, 0, 0, 0.1) 50%, 
+        rgba(255, 0, 0, 0) 70%
+    );
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.teacher.alert::before {
+    /* 警告狀態下的視線範圍效果 */
+    background: radial-gradient(circle, 
+        rgba(255, 0, 0, 0.25) 0%, 
+        rgba(255, 0, 0, 0.15) 50%, 
+        rgba(255, 0, 0, 0) 70%
+    );
+    /* 加快動畫速度至 0.6 秒 */
+    animation: pulse 0.6s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.15);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.3;
+    }
 }
 
 .door {
     width: 60px;
     height: 100px;
-    background-color: #795548;
+    background: linear-gradient(to right, #8B4513, #654321);
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
+    border: 4px solid #4A2810;
+    border-radius: 5px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.door::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #FFD700;
+    border-radius: 50%;
+    left: 5px;
+    top: 45%;
+    box-shadow: 0 0 5px #FFD700;
+}
+
+.door::after {
+    content: '出口';
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: -25px;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* 當玩家接近門時的發光效果 */
+.door.nearby {
+    animation: doorGlow 1s infinite alternate;
+}
+
+@keyframes doorGlow {
+    from {
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    }
+    to {
+        box-shadow: -2px 0 15px rgba(255, 215, 0, 0.5);
+    }
 }
 
 .desk {
